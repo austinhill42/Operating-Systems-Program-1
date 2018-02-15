@@ -1,78 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
-#define ROWLEN 11
-#define COLLEN 2
-
-typedef struct Mem
-{
-    int partsize;
-    int numparts;
-    int memreqs[ROWLEN][COLLEN];
-
-} Mem;
-
-int** expandArray(int** arr, int row, int col, int newrow, int newcol);
+#include <stdbool.h>
 
 void main(void)
 {
     /* initialize variables */
     int i = 0;
     int length = 0;
-    int read = 0;
+    /* temp buffer to store the requests of unknown length */
+    int* read = (int*)malloc(sizeof(int) * 100);
+    /* while loop control */
     char nl;
-    Mem mem = {512, 10, {{0}}}; // initialize the struct
 
-    mem.memreqs[0][0] = ROWLEN; // first row elment stores the number of rows
-    mem.memreqs[0][1] = COLLEN; // first col element stores the number of columns
-    
-    printf("Memory Requests: ");
+    printf("Enter Memory Requests (up to 100): ");
   
     /* read requests into array */
-    i = 1;
-    while(scanf("%d", &mem.memreqs[i++][0]))   
-    {
-        length++;
-
-        /* if number of requests exceeds array size, expand the array */
-        if(length == mem.memreqs[0][0] - 1)
-        {   
-            mem.memreqs = expandArray(mem.memreqs, 
-                                      mem.memreqs[0][0], 
-                                      mem.memreqs[0][1], 
-                                      mem.memreqs[0][0] + 1, 
-                                      mem.memreqs[0][1]);
-        }
-        //printf("\nYou Entered: %d", mem.memreqs[i-1][0]);
-        //printf("\n%d %d %d\n", mem.memreqs[0][0], mem.memreqs[0][1], length);
+    while(scanf("%d", &read[length++]))   
         if((nl = getchar()) == '\n')
             break;
-
+    
+    /* struct for each mempoy request */
+    typedef struct memassign
+    {
+        int size;
+        int startloc;
+        bool inmem;   
+    } memassign;
+    
+    /* struct for overall memory */
+    struct memory
+    {
+        int partsize;
+        int numparts;
+        memassign memreq[length];
+    } mem;
+    
+    mem.partsize = 512;
+    mem.numparts = 10;
+    
+    /* initialize struct values */
+    for(i = 0; i < length; i++)
+    {
+        mem.memreq[i].size = read[i];
+        mem.memreq[i].startloc = (mem.partsize * i);
+        mem.memreq[i].inmem = false;
     }
-    
-    printf("\nYou entered: ");
-    for(i = 1; i < mem.memreqs[0][0]; printf("*%d* ", mem.memreqs[i++][0]));
-    printf("\n");
-    
-}
 
-/* function to expand an array */
-int** expandArray(int** arr, int row, int col, int newrow, int newcol)
-{
-    printf("\nEXPANDING ARRAY: %d %d %d %d\n", row, col, newrow, newcol);
-    int i = 0;
-    int j = 0;
-    int temp[newrow][newcol];
-
-    for(i = 0; i < row; i++)
-        for(j = 0; j < col; j++)
-            temp[i][j] = arr[i][j];
-
-    /* update the array size */
-    temp[0][0] = newrow;
-    temp[0][1] = newcol;
-    printf("\n**%d %d**\n", sizeof(temp)/sizeof(temp[0]), sizeof(temp[0]) / sizeof(temp[0][0]));
-
-    return temp;
+    free(read);
 }
